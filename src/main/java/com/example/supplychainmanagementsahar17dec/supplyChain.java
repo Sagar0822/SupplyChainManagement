@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
@@ -29,6 +30,17 @@ public class supplyChain extends Application {
      String customerEmail = null;
 
      private GridPane headerBar(){
+
+         Label logo=new Label("Novelty Market");
+//        logo.setFont(Font.font(null, FontWeight.EXTRA_BOLD, 19));
+         logo.setStyle("-fx-text-fill: white; -fx-underline: true; -fx-font-style: italic; -fx-font-weight: bold; -fx-font-size: 18px;");
+         logo.setOnMouseClicked(new EventHandler<MouseEvent>() {
+             @Override
+             public void handle(MouseEvent mouseEvent) {
+                 bodyPane.getChildren().clear();
+                 bodyPane.getChildren().addAll(productDetails.getAllProducts());
+             }
+         });
          TextField searchText = new TextField();
          Button searchButton = new Button("Search");
          searchButton.setOnAction(new EventHandler<ActionEvent>(){
@@ -52,6 +64,7 @@ public class supplyChain extends Application {
          GridPane gridPane = new GridPane();
          //fix header size in X & Y
          gridPane.setMinSize(bodyPane.getMinWidth(), headerbar-10);
+         gridPane.setStyle("-fx-background-color: #5C5CFF");
          //gap b/w two grids ex searchText & button verticle & horz
          gridPane.setVgap(5);
          gridPane.setHgap(5);
@@ -59,10 +72,11 @@ public class supplyChain extends Application {
          //gridPane.setStyle("-fx-background-color: #C0C0C0");
          gridPane.setAlignment(Pos.CENTER);  //center
 
-         gridPane.add(searchText, 0, 0);
-         gridPane.add(searchButton, 1, 0);
-         gridPane.add(globelLoginButton, 2, 0);
-         gridPane.add(customerEmailLabel, 3, 0);
+         gridPane.add(logo, 0, 0);
+         gridPane.add(searchText, 4, 0);
+         gridPane.add(searchButton, 5, 0);
+         gridPane.add(globelLoginButton, 8, 0);
+         gridPane.add(customerNameLabel, 9, 0);
 
          return gridPane;
      }
