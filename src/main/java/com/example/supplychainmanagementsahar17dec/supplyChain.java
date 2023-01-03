@@ -13,6 +13,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import java.sql.ResultSet;
 
 
 import java.io.IOException;
@@ -26,8 +27,10 @@ public class supplyChain extends Application {
      ProductDetails productDetails = new ProductDetails();
 
      Button globelLoginButton;
-     Label customerEmailLabel = null;
+     Label customerNameLabel = null;
      String customerEmail = null;
+
+
 
      private GridPane headerBar(){
 
@@ -59,7 +62,8 @@ public class supplyChain extends Application {
                  bodyPane.getChildren().add(loginPage());
              }
          });
-         customerEmailLabel = new Label("Welcome user");
+         customerNameLabel =new Label("Welcome user!");
+         customerNameLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
       //GridPane -> divide pane window in block pattern
          GridPane gridPane = new GridPane();
          //fix header size in X & Y
@@ -67,7 +71,7 @@ public class supplyChain extends Application {
          gridPane.setStyle("-fx-background-color: #5C5CFF");
          //gap b/w two grids ex searchText & button verticle & horz
          gridPane.setVgap(5);
-         gridPane.setHgap(5);
+         gridPane.setHgap(10);
 
          //gridPane.setStyle("-fx-background-color: #C0C0C0");
          gridPane.setAlignment(Pos.CENTER);  //center
@@ -84,9 +88,9 @@ public class supplyChain extends Application {
 
         Label emailLabel = new Label("Email");
         Label passwordLabel = new Label("Password");
-        Label messageLabel = new Label("I am message");
+        Label messageLabel = new Label("Enter email and Password.");
 
-        TextField emailTextField = new TextField();
+        TextField emailTextField     = new TextField();
         PasswordField passwordField = new PasswordField();
 
         Button loginButton = new Button("Login");
@@ -97,16 +101,27 @@ public class supplyChain extends Application {
                String password = passwordField.getText();
                //messageLabel.setText(email + " $$ " + password);
                 if(login.customerLogin(email,password)){   //if email password correct then go inside & show both message
+                    //Database connection for displaying name
+                    DatabaseConnection databaseConnection=new DatabaseConnection();
+                    String query=String.format("select first_name from customer where email = '%s'",email);
+                    ResultSet rs = databaseConnection.getQueryTable(query);
+                    try {
+                        while(rs.next()) {
+                            customerNameLabel.setText("Welcome " + rs.getString("first_name"));
+                        }
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
                     messageLabel.setText("Login successful");
                     customerEmail = email;
                     globelLoginButton.setDisable(true);
-                    customerEmailLabel.setText("User : " + customerEmail);
+                    //customerEmailLabel.setText("User : " + customerEmail);
                     //After login show all products
                     bodyPane.getChildren().clear();
                     bodyPane.getChildren().add(productDetails.getAllProducts());
                 }
                 else{
-                    messageLabel.setText("Login Failed");
+                    messageLabel.setText("Incorrect email or password.");
                 }
             }
         });
