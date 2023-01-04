@@ -1,14 +1,14 @@
 package com.example.supplychainmanagementsahar17dec;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -20,20 +20,22 @@ import java.io.IOException;
 
 public class supplyChain extends Application {
 
-     public static final int width = 700, height = 600, headerbar = 50, footerbar = 50;
+     public static final int width = 700, height = 600, headerbar = 50,footerBar = 50;
 
      Pane bodyPane = new Pane();
      Login login = new Login();
      ProductDetails productDetails = new ProductDetails();
 
-     Button globelLoginButton;
+     Button globalLoginButton;
      Button globalSignupButton;
      Label customerNameLabel = null;
      String customerEmail = null;
-     Button buyButton;
-     Button addCartButton;
+     public TableView<Product> cartTable;
+     Button buyNowButton;
+     Button addToCartButton;
      Button logoutButton;
      Button myCartButton;
+     ObservableList<Product> cart;
 
      private GridPane headerBar(){
 
@@ -58,8 +60,8 @@ public class supplyChain extends Application {
                  bodyPane.getChildren().add(productDetails.getProductsByName(productName));
              }
          });
-         globelLoginButton = new Button("Log In");
-         globelLoginButton.setOnAction(new EventHandler<ActionEvent>() {
+         globalLoginButton = new Button("Log In");
+         globalLoginButton.setOnAction(new EventHandler<ActionEvent>() {
              public void handle(ActionEvent actionEvent) {
                  bodyPane.getChildren().clear();  //press login button clear bodypane page & show login page
                  bodyPane.getChildren().add(loginPage());
@@ -79,6 +81,7 @@ public class supplyChain extends Application {
          GridPane gridPane = new GridPane();
          //fix header size in X & Y
          gridPane.setMinSize(bodyPane.getMinWidth(), headerbar-10);
+
          gridPane.setStyle("-fx-background-color: #5C5CFF");
          //gap b/w two grids ex searchText & button verticle & horz
          gridPane.setVgap(5);
@@ -90,7 +93,7 @@ public class supplyChain extends Application {
          gridPane.add(logo, 0, 0);
          gridPane.add(searchText, 4, 0);
          gridPane.add(searchButton, 5, 0);
-         gridPane.add(globelLoginButton, 8, 0);
+         gridPane.add(globalLoginButton, 8, 0);
          gridPane.add(globalSignupButton,9,0);
          gridPane.add(customerNameLabel, 10, 0);
 
@@ -126,14 +129,14 @@ public class supplyChain extends Application {
                     }
                     messageLabel.setText("Login successful");
                     customerEmail = email;
-                    globelLoginButton.setDisable(true);
+                    globalLoginButton.setDisable(true);
                     globalSignupButton.setDisable(true);
                     //customerEmailLabel.setText("User : " + customerEmail);
                     //After login show all products
                     bodyPane.getChildren().clear();
                     bodyPane.getChildren().add(productDetails.getAllProducts());
-                    buyButton.setVisible(true);
-                    addCartButton.setVisible(true);
+                    buyNowButton.setVisible(true);
+                    addToCartButton.setVisible(true);
                     logoutButton.setVisible(true);
                     myCartButton.setVisible(true);
                 }
@@ -205,13 +208,13 @@ public class supplyChain extends Application {
                     if (rowCount > 0) {
                         customerEmail = emailTextField.getText();
                         customerNameLabel.setText("Welcome " + firstNameTextField.getText());
-                        globelLoginButton.setVisible(false);
+                        globalLoginButton.setVisible(false);
                         globalSignupButton.setVisible(false);
 
                         bodyPane.getChildren().clear();
                         bodyPane.getChildren().add(productDetails.getAllProducts());
-                        buyButton.setVisible(true);
-                        addCartButton.setVisible(true);
+                        buyNowButton.setVisible(true);
+                        addToCartButton.setVisible(true);
                         logoutButton.setVisible(true);
                         myCartButton.setVisible(true);
                     } else if (rowCount == 0) {
@@ -254,42 +257,100 @@ public class supplyChain extends Application {
     }
 
     private GridPane footerBar(){
-
-        Button addToCardButton = new Button("Add To Card");
-        Button buyNowButton = new Button("Buy Now");
-        Label messageLabel = new Label("");
-        buyNowButton.setOnAction(new EventHandler<ActionEvent>() {
+        addToCartButton=new Button("Add to Cart");
+        buyNowButton=new Button("Buy Now");
+        myCartButton=new Button("My cart");
+        buyNowButton.setVisible(false);
+        addToCartButton.setVisible(false);
+        Label messageLabel=new Label("");
+        cart= FXCollections.observableArrayList();
+        addToCartButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
             public void handle(ActionEvent actionEvent) {
-                  Product selectedProduct = productDetails.getSelectedProduct();
-                  if(Order.placeOrder(customerEmail, selectedProduct)){
-                      messageLabel.setText("Ordered");
-                  }
-                  else{
-                      messageLabel.setText("Order Failed");
-                  }
+                Product selectedProduct=productDetails.getSelectedProduct();
+                cart.add(selectedProduct);
+                messageLabel.setText("Added to cart!");
+            }
+        });
+        myCartButton.setVisible(false);
+        myCartButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                //clear body
+                bodyPane.getChildren().clear();
+                TableColumn id=new TableColumn("Id");
+                id.setCellValueFactory(new PropertyValueFactory<>("id"));
+                TableColumn name=new TableColumn("Name");
+                name.setCellValueFactory(new PropertyValueFactory<>("name"));
+                TableColumn price=new TableColumn("Price");
+                price.setCellValueFactory(new PropertyValueFactory<>("price"));
+
+                cartTable=new TableView<>();
+                cartTable.setItems(cart);
+                cartTable.getColumns().addAll(id,name,price);
+                cartTable.setMinSize(supplyChain.width,supplyChain.height);
+                cartTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+                Pane tablePane=new Pane();
+                tablePane.setMinSize(supplyChain.width,supplyChain.height);
+                tablePane.getChildren().add(cartTable);
+
+                bodyPane.getChildren().addAll(tablePane);
+
             }
         });
 
-        GridPane gridPane = new GridPane();
-        gridPane.setMinSize(bodyPane.getMinWidth(), footerbar-10);
+        logoutButton=new Button("Logout");
+        logoutButton.setVisible(false);
+        logoutButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                bodyPane.getChildren().clear();
+                bodyPane.getChildren().addAll(productDetails.getAllProducts());
+                customerNameLabel.setText("Logged out.");
+                customerEmail=null;
+                buyNowButton.setVisible(false);
+                addToCartButton.setVisible(false);
+                logoutButton.setVisible(false);
+                globalLoginButton.setVisible(true);
+                globalSignupButton.setVisible(true);
+                myCartButton.setVisible(false);
+                messageLabel.setVisible(false);
+            }
+        });
+
+        messageLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
+        buyNowButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                Product selectedProduct=productDetails.getSelectedProduct();
+                if(Order.placeOrder(customerEmail,selectedProduct)){
+                    messageLabel.setText("Order placed!");
+                }else{
+                    messageLabel.setText("Order failed!");
+                }
+            }
+        });
+        GridPane gridPane=new GridPane();
+        gridPane.setMinSize(bodyPane.getMinWidth(),footerBar-10);
+        gridPane.setStyle("-fx-background-color: #5C5CFF");
+        gridPane.setAlignment(Pos.CENTER);
+        gridPane.setTranslateY(headerbar+height+10);
         gridPane.setVgap(5);
-        gridPane.setHgap(50);
+        gridPane.setHgap(20);
 
-        //gridPane.setStyle("-fx-background-color: #C0C0C0");
-        gridPane.setAlignment(Pos.CENTER);  //center
-        gridPane.setTranslateY(headerbar + height + 10);
-
-        gridPane.add(addToCardButton, 0, 0);
-        gridPane.add(buyNowButton, 1, 0);
-        gridPane.add(messageLabel, 2, 0);
-
+        gridPane.add(myCartButton,0,0);
+        gridPane.add(addToCartButton,3,0);
+        gridPane.add(buyNowButton,4,0);
+        gridPane.add(messageLabel,5,0);
+        gridPane.add(logoutButton,7,0);
         return gridPane;
     }
 
     private Pane createContent(){
         Pane root = new Pane();
         // set size whole window or pane
-         root.setPrefSize(width, height + headerbar + footerbar); //03
+         root.setPrefSize(width, height + headerbar + footerBar); //03
 
         bodyPane.setMinSize(width, height);
         //root.getChildren().addAll(loginPage()); //02 shift loginpage into bodypane
