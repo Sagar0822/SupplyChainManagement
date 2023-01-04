@@ -27,10 +27,13 @@ public class supplyChain extends Application {
      ProductDetails productDetails = new ProductDetails();
 
      Button globelLoginButton;
+     Button globalSignupButton;
      Label customerNameLabel = null;
      String customerEmail = null;
-
-
+     Button buyButton;
+     Button addCartButton;
+     Button logoutButton;
+     Button myCartButton;
 
      private GridPane headerBar(){
 
@@ -62,6 +65,14 @@ public class supplyChain extends Application {
                  bodyPane.getChildren().add(loginPage());
              }
          });
+
+         globalSignupButton = new Button("Sign Up");
+         globalSignupButton.setOnAction(new EventHandler<ActionEvent>() {
+             public void handle(ActionEvent actionEvent) {
+               bodyPane.getChildren().clear();
+               bodyPane.getChildren().add(signupPage());
+             }
+         });
          customerNameLabel =new Label("Welcome user!");
          customerNameLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
       //GridPane -> divide pane window in block pattern
@@ -80,7 +91,8 @@ public class supplyChain extends Application {
          gridPane.add(searchText, 4, 0);
          gridPane.add(searchButton, 5, 0);
          gridPane.add(globelLoginButton, 8, 0);
-         gridPane.add(customerNameLabel, 9, 0);
+         gridPane.add(globalSignupButton,9,0);
+         gridPane.add(customerNameLabel, 10, 0);
 
          return gridPane;
      }
@@ -115,10 +127,15 @@ public class supplyChain extends Application {
                     messageLabel.setText("Login successful");
                     customerEmail = email;
                     globelLoginButton.setDisable(true);
+                    globalSignupButton.setDisable(true);
                     //customerEmailLabel.setText("User : " + customerEmail);
                     //After login show all products
                     bodyPane.getChildren().clear();
                     bodyPane.getChildren().add(productDetails.getAllProducts());
+                    buyButton.setVisible(true);
+                    addCartButton.setVisible(true);
+                    logoutButton.setVisible(true);
+                    myCartButton.setVisible(true);
                 }
                 else{
                     messageLabel.setText("Incorrect email or password.");
@@ -144,6 +161,95 @@ public class supplyChain extends Application {
         gridPane.add(loginButton,0, 2);
         gridPane.add(messageLabel,1, 2);
 
+        return gridPane;
+    }
+
+    private GridPane signupPage() {
+        Label firstName=new Label("First name:");
+        Label lastName=new Label("Last name:");
+        Label emailLabel=new Label("Email:");
+        Label addressLabel=new Label("Address:");
+        Label phoneLabel=new Label("Phone:");
+        Label passwordLabel=new Label("Password:");
+
+        TextField firstNameTextField=new TextField();
+        firstNameTextField.setPromptText("Your first name");
+        TextField lastNameTextField=new TextField();
+        lastNameTextField.setPromptText("Your last name");
+        TextField phoneTextField=new TextField();
+        phoneTextField.setPromptText("10 digit number");
+        TextField emailTextField=new TextField();
+        emailTextField.setPromptText("Enter your email");
+        TextField addressTextField=new TextField();
+        PasswordField passwordField=new PasswordField();
+
+        addressTextField.setMinSize(100,60);
+
+        Button signupButton=new Button("Signup");
+        Label messageLabel=new Label("Create your account.");
+
+        signupButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                if(firstNameTextField.getText().length()>=3 && emailTextField.getText().length()>=8 && phoneTextField.getText().length()==10) {
+                    DatabaseConnection databaseConnection = new DatabaseConnection();
+                    String query = String.format("INSERT INTO customer (first_name,last_name,email,password,mobile_no,address) values('%s','%s','%s','%s','%s','%s')", firstNameTextField.getText(), lastNameTextField.getText(), emailTextField.getText(), passwordField.getText(), phoneTextField.getText(), addressTextField.getText());
+//                ResultSet rs = databaseConnection.getQueryTable(query);
+                    int rowCount = 0;
+                    try {
+                        rowCount = databaseConnection.executeUpdateQuery(query);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    if (rowCount > 0) {
+                        customerEmail = emailTextField.getText();
+                        customerNameLabel.setText("Welcome " + firstNameTextField.getText());
+                        globelLoginButton.setVisible(false);
+                        globalSignupButton.setVisible(false);
+
+                        bodyPane.getChildren().clear();
+                        bodyPane.getChildren().add(productDetails.getAllProducts());
+                        buyButton.setVisible(true);
+                        addCartButton.setVisible(true);
+                        logoutButton.setVisible(true);
+                        myCartButton.setVisible(true);
+                    } else if (rowCount == 0) {
+                        messageLabel.setText("Sorry, we are not able to create your account");
+                    }
+                }else{
+                    messageLabel.setText("Enter details properly");
+                }
+            }
+        });
+
+        GridPane gridPane=new GridPane();
+        gridPane.setMinSize(bodyPane.getMinWidth(),bodyPane.getMinHeight());
+
+        gridPane.setAlignment(Pos.CENTER);
+        gridPane.setVgap(5);
+        gridPane.setHgap(5);
+
+        gridPane.add(firstName,0,0);
+        gridPane.add(firstNameTextField,1,0);
+
+        gridPane.add(lastName,0,1);
+        gridPane.add(lastNameTextField,1,1);
+
+        gridPane.add(emailLabel,0,2);
+        gridPane.add(emailTextField,1,2);
+
+        gridPane.add(passwordLabel,0,3);
+        gridPane.add(passwordField,1,3);
+
+        gridPane.add(phoneLabel,0,4);
+        gridPane.add(phoneTextField,1,4);
+
+        gridPane.add(addressLabel,0,5);
+        gridPane.add(addressTextField,1,5);
+
+        gridPane.add(signupButton,0,6);
+        gridPane.add(messageLabel,1,6);
         return gridPane;
     }
 
